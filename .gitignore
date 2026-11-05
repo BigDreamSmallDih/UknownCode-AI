@@ -147,3 +147,16 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# Capacitor / Android
+apps/mobile/android/
+.gradle/
+*.apk
+*.jks
+*.keystore
+local.properties
+
+# Env files (never commit secrets)
+.env
+.env.*
+!.env.example
