@@ -20,21 +20,16 @@ Aplikasi ──GET /me + Bearer token──▶ Backend ──verifikasi token─
 ## Menyiapkan Supabase
 
 1. Buat project baru di supabase.com (disarankan project terpisah dari aplikasi lain).
-2. Terapkan migrasi di `supabase/migrations` secara berurutan (lihat [database.md](database.md)).
+2. Terapkan skema: buka **SQL Editor**, tempel seluruh isi `supabase/setup.sql`, lalu **Run** (lihat [database.md](database.md)).
 3. Di **Authentication → Providers**, pastikan Email aktif. Untuk pengujian cepat, matikan
    "Confirm email"; untuk produksi biarkan aktif.
 4. Catat **Project URL** dan **publishable key** (Settings → API Keys).
 
 ## Konfigurasi aplikasi (build APK)
 
-Di GitHub: **Settings → Secrets and variables → Actions → Variables**, tambahkan:
-
-| Variable | Isi |
-| --- | --- |
-| `VITE_SUPABASE_URL` | `https://<ref>.supabase.co` |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | publishable key (`sb_publishable_...`) |
-
-Lalu jalankan ulang workflow **Build Android APK**.
+URL project dan publishable key disimpan di `apps/mobile/.env.production`. File ini sengaja
+di-commit karena isinya publik. **Jangan pernah** mengisinya dengan secret key atau service role.
+Untuk memakai project Supabase lain, ubah dua nilai di file itu lalu build ulang APK.
 
 ## Konfigurasi backend
 

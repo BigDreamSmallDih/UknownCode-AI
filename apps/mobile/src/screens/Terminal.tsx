@@ -1,14 +1,12 @@
 import { PhaseNotice } from '../components/PhaseNotice';
+import { useI18n } from '../i18n/I18nContext';
 
 export function Terminal() {
+  const { t } = useI18n();
   return (
     <div className="screen">
-      <h1>Terminal</h1>
-      <PhaseNotice
-        title="Eksekusi terisolasi"
-        phase={7}
-        description="Menjalankan build dan test di sandbox terpisah, lengkap dengan log dan pembatalan."
-      />
+      <h1>{t('terminal.title')}</h1>
+      <PhaseNotice titleKey="terminal.sandbox.title" descriptionKey="terminal.sandbox.desc" phase={7} />
     </div>
   );
 }

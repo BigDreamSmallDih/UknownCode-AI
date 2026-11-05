@@ -1,43 +1,53 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { Logo } from '../components/Logo';
+import type { MessageKey, TranslateParams } from '../i18n';
+import { useI18n } from '../i18n/I18nContext';
 import { useAuth } from '../lib/AuthContext';
 import { validateCredentials } from '../lib/authErrors';
 import { useNetwork } from '../lib/useNetwork';
 
 type Mode = 'signin' | 'signup';
 
+interface Notice {
+  key: MessageKey;
+  params?: TranslateParams;
+}
+
 export function AuthScreen() {
+  const { t } = useI18n();
   const { signIn, signUp } = useAuth();
   const { online } = useNetwork();
   const [mode, setMode] = useState<Mode>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [info, setInfo] = useState<string | null>(null);
+  const [error, setError] = useState<Notice | null>(null);
+  const [info, setInfo] = useState<Notice | null>(null);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
     setError(null);
     setInfo(null);
 
-    const validation = validateCredentials(email, password);
-    if (validation) {
-      setError(validation);
+    const invalid = validateCredentials(email, password);
+    if (invalid) {
+      setError(invalid.key === 'err.shortPassword' ? invalid : { key: invalid.key });
       return;
     }
 
     setBusy(true);
     try {
-      const result = mode === 'signin' ? await signIn(email, password) : await signUp(email, password);
+      const result =
+        mode === 'signin' ? await signIn(email, password) : await signUp(email, password);
       if (!result.ok) {
-        setError(result.message);
+        setError({ key: result.messageKey });
       } else if (result.needsConfirmation) {
-        setInfo('Pendaftaran berhasil. Buka emailmu dan konfirmasi akun, lalu masuk.');
+        setInfo({ key: 'auth.confirmEmail' });
         setMode('signin');
         setPassword('');
       }
-      // On success with a session, AuthProvider updates and the app opens by itself.
+      // With a session, AuthProvider updates and the app opens by itself.
     } finally {
       setBusy(false);
     }
@@ -54,15 +64,20 @@ export function AuthScreen() {
       <main className="app-main">
         <div className="screen auth">
           <header className="hero">
-            <h1>
-              Uknown<span className="accent">Code</span> AI
-            </h1>
-            <p className="muted">{mode === 'signin' ? 'Masuk ke akunmu' : 'Buat akun baru'}</p>
+            <Logo size={48} />
+            <div>
+              <h1>
+                Uknown<span className="accent">Code</span> AI
+              </h1>
+              <p className="muted">
+                {mode === 'signin' ? t('auth.signinSubtitle') : t('auth.signupSubtitle')}
+              </p>
+            </div>
           </header>
 
           <form className="card" onSubmit={(event) => void submit(event)} noValidate>
             <label htmlFor="auth-email" className="muted">
-              Email
+              {t('auth.email')}
             </label>
             <input
               id="auth-email"
@@ -78,7 +93,7 @@ export function AuthScreen() {
             />
 
             <label htmlFor="auth-password" className="muted">
-              Kata sandi
+              {t('auth.password')}
             </label>
             <input
               id="auth-password"
@@ -91,21 +106,21 @@ export function AuthScreen() {
 
             {error && (
               <p className="error-text" role="alert">
-                {error}
+                {t(error.key, error.params)}
               </p>
             )}
             {info && (
               <p className="ok" role="status">
-                {info}
+                {t(info.key, info.params)}
               </p>
             )}
-            {!online && <p className="error-text">Tidak ada koneksi internet.</p>}
+            {!online && <p className="error-text">{t('auth.noInternet')}</p>}
 
             <button type="submit" className="btn primary" disabled={busy || !online}>
-              {busy ? 'Memproses…' : mode === 'signin' ? 'Masuk' : 'Daftar'}
+              {busy ? t('auth.working') : mode === 'signin' ? t('auth.signin') : t('auth.signup')}
             </button>
             <button type="button" className="btn" onClick={switchMode} disabled={busy}>
-              {mode === 'signin' ? 'Belum punya akun? Daftar' : 'Sudah punya akun? Masuk'}
+              {mode === 'signin' ? t('auth.toSignup') : t('auth.toSignin')}
             </button>
           </form>
         </div>

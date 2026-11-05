@@ -45,7 +45,7 @@ Ini APK debug untuk pengujian. APK release yang ditandatangani dibuat di Phase 9
 
 1. Buat Web Service baru di Render dari repo ini.
 2. Root directory: `backend`. Build: `npm install --include=dev && npm run build`. Start: `npm start`.
-3. Environment: `NODE_ENV=production`, `CORS_ORIGINS=https://localhost`.
+3. Environment: `NODE_ENV=production`, `CORS_ORIGINS=https://localhost`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, dan `OPENROUTER_API_KEY` (lihat [ai.md](ai.md)).
 4. Isi URL layanan di aplikasi: **Settings → Backend**.
 
 Catatan: tier gratis Render tidur saat tidak dipakai, jadi permintaan pertama bisa memakan waktu.

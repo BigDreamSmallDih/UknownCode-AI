@@ -160,3 +160,4 @@ local.properties
 .env
 .env.*
 !.env.example
+!apps/mobile/.env.production

@@ -2,7 +2,7 @@
 
 AI-powered Android coding environment with multi-provider agents and GitHub integration.
 
-**Status: Phase 2 (autentikasi dan database).** Fitur lain ditampilkan sebagai "Belum tersedia"
+**Status: Phase 2 selesai dan awal Phase 4 (chat AI lewat OpenRouter).** Fitur lain ditampilkan sebagai "Belum tersedia"
 sampai fasenya dibangun.
 
 ## Isi repo
@@ -10,7 +10,7 @@ sampai fasenya dibangun.
 - `apps/mobile`: aplikasi Android (React + Vite + Capacitor)
 - `backend`: server Fastify
 - `supabase/migrations`: skema database dan RLS
-- `docs`: [arsitektur](docs/architecture.md), [database](docs/database.md), [auth](docs/auth.md), [setup](docs/setup.md)
+- `docs`: [arsitektur](docs/architecture.md), [database](docs/database.md), [auth](docs/auth.md), [AI](docs/ai.md), [setup](docs/setup.md)
 
 ## Mulai cepat
 

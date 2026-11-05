@@ -29,14 +29,20 @@ sehingga baris tidak bisa menunjuk ke induk milik pengguna lain.
   non-rahasia `ai_providers`.
 - Tabel lain read-only untuk pengguna. Backend menulisnya dengan service role setelah validasi.
 
-## Menerapkan migrasi dari Termux
+## Menerapkan skema
+
+**Cara termudah (dari HP):** buka Supabase Dashboard, **SQL Editor**, tempel seluruh isi
+`supabase/setup.sql`, lalu **Run**. Jalankan sekali di project yang baru dan kosong.
+
+`setup.sql` dihasilkan dari folder `supabase/migrations`. Setelah mengubah migrasi, buat ulang
+dengan `./scripts/bundle-sql.sh`.
+
+**Lewat Supabase CLI:**
 
 ```bash
-npm install -g supabase   # atau: npx supabase ...
-supabase login
-supabase link --project-ref <PROJECT_REF>
-supabase db push
+npx supabase login
+npx supabase link --project-ref <PROJECT_REF>
+npx supabase db push
 ```
 
-Jika Supabase CLI tidak berjalan di Termux, salin isi tiap file `.sql` secara berurutan ke
-SQL Editor di dashboard Supabase.
+Setelah dijalankan, buka **Table Editor** dan pastikan sembilan tabel ada dan RLS aktif.

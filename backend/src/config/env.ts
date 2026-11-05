@@ -19,6 +19,11 @@ const envSchema = z.object({
       .optional(),
   ),
   SUPABASE_PUBLISHABLE_KEY: z.preprocess(blankToUndefined, z.string().min(1).optional()),
+  // Server-side OpenRouter key. Keep it in the host's environment settings, never in the repo.
+  OPENROUTER_API_KEY: z.preprocess(blankToUndefined, z.string().min(1).optional()),
+  OPENROUTER_REFERER: z.preprocess(blankToUndefined, z.string().url().optional()),
+  // Max AI chat requests per user per 10 minutes.
+  AI_RATE_LIMIT: z.coerce.number().int().min(1).max(10_000).default(30),
   // Comma-separated list of allowed origins. Capacitor Android uses https://localhost.
   CORS_ORIGINS: z
     .string()
