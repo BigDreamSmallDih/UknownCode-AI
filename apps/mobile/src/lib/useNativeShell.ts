@@ -2,15 +2,23 @@ import { App } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useSettings } from './SettingsContext';
 import { isNative } from './storage';
+import { getTheme } from './theme';
 
-/** Configures the Android status bar once on startup. */
+/** Keeps the Android status bar in sync with the selected theme. */
 export function useStatusBar(): void {
+  const { settings } = useSettings();
   useEffect(() => {
+    const theme = getTheme(settings.theme);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    meta?.setAttribute('content', theme.statusBarColor);
     if (!isNative()) return;
-    void StatusBar.setStyle({ style: Style.Dark }).catch(() => undefined);
-    void StatusBar.setBackgroundColor({ color: '#0b0b14' }).catch(() => undefined);
-  }, []);
+    void StatusBar.setStyle({ style: theme.dark ? Style.Dark : Style.Light }).catch(
+      () => undefined,
+    );
+    void StatusBar.setBackgroundColor({ color: theme.statusBarColor }).catch(() => undefined);
+  }, [settings.theme]);
 }
 
 /**

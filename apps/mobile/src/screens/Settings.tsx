@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
+import { useAuth } from '../lib/AuthContext';
 import { useSettings } from '../lib/SettingsContext';
 import { normalizeBackendUrl, type FontSize } from '../lib/settings';
+import { THEMES } from '../lib/theme';
 
 const FONT_OPTIONS: ReadonlyArray<{ value: FontSize; label: string }> = [
   { value: 'sm', label: 'Kecil' },
@@ -11,6 +13,7 @@ const FONT_OPTIONS: ReadonlyArray<{ value: FontSize; label: string }> = [
 
 export function Settings() {
   const { settings, loaded, update } = useSettings();
+  const auth = useAuth();
   const [urlInput, setUrlInput] = useState('');
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
 
@@ -41,6 +44,22 @@ export function Settings() {
     <div className="screen">
       <h1>Settings</h1>
 
+      <section className="card">
+        <h2>Akun</h2>
+        {!auth.configured && (
+          <p className="muted">Login belum dikonfigurasi di build ini.</p>
+        )}
+        {auth.configured && auth.session && (
+          <>
+            <p className="muted">Masuk sebagai</p>
+            <p>{auth.session.user.email}</p>
+            <button type="button" className="btn" onClick={() => void auth.signOut()}>
+              Keluar
+            </button>
+          </>
+        )}
+      </section>
+
       <form className="card" onSubmit={(event) => void saveUrl(event)}>
         <h2>Backend</h2>
         <label htmlFor="backend-url" className="muted">
@@ -70,6 +89,27 @@ export function Settings() {
 
       <section className="card">
         <h2>Tampilan</h2>
+        <p className="muted">Tema</p>
+        <div className="theme-grid" role="radiogroup" aria-label="Tema">
+          {THEMES.map((theme) => (
+            <button
+              key={theme.id}
+              type="button"
+              role="radio"
+              aria-checked={settings.theme === theme.id}
+              className="theme-option"
+              onClick={() => void update({ theme: theme.id })}
+            >
+              <span
+                className="swatch"
+                style={{
+                  background: `linear-gradient(135deg, ${theme.swatch[0]} 50%, ${theme.swatch[1]} 50%)`,
+                }}
+              />
+              {theme.label}
+            </button>
+          ))}
+        </div>
         <p className="muted">Ukuran teks</p>
         <div className="segmented" role="radiogroup" aria-label="Ukuran teks">
           {FONT_OPTIONS.map((option) => (
@@ -97,7 +137,7 @@ export function Settings() {
 
       <section className="card">
         <h2>Tentang</h2>
-        <p className="muted">UknownCode AI v0.1.0 · Phase 1</p>
+        <p className="muted">UknownCode AI v0.2.0 · Phase 2</p>
       </section>
     </div>
   );

@@ -1,10 +1,17 @@
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
+import { createSupabaseAuthService, type AuthService } from './auth/auth.service.js';
 import type { Env } from './config/env.js';
 import { healthRoutes } from './routes/health.js';
+import { meRoutes } from './routes/me.js';
 
-export async function buildApp(env: Env): Promise<FastifyInstance> {
+export interface AppDeps {
+  /** Override the auth service (tests). `null` means "not configured". */
+  auth?: AuthService | null;
+}
+
+export async function buildApp(env: Env, deps: AppDeps = {}): Promise<FastifyInstance> {
   const app = Fastify({
     logger: env.NODE_ENV === 'test' ? false : { level: env.LOG_LEVEL },
     disableRequestLogging: env.NODE_ENV === 'test',
@@ -31,7 +38,10 @@ export async function buildApp(env: Env): Promise<FastifyInstance> {
     void reply.status(404).send({ error: { code: 'NOT_FOUND', message: 'Route not found' } });
   });
 
+  const auth = deps.auth !== undefined ? deps.auth : createSupabaseAuthService(env);
+
   await app.register(healthRoutes);
+  await app.register(meRoutes(auth));
 
   return app;
 }

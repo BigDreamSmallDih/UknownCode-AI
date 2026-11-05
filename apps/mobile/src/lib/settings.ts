@@ -1,3 +1,5 @@
+import { DEFAULT_THEME, isThemeId, type ThemeId } from './theme';
+
 export type FontSize = 'sm' | 'md' | 'lg';
 
 export interface AppSettings {
@@ -5,12 +7,14 @@ export interface AppSettings {
   backendUrl: string;
   fontSize: FontSize;
   reduceMotion: boolean;
+  theme: ThemeId;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
   backendUrl: '',
   fontSize: 'md',
   reduceMotion: false,
+  theme: DEFAULT_THEME,
 };
 
 export const SETTINGS_KEY = 'uknowncode.settings.v1';
@@ -57,5 +61,7 @@ export function parseSettings(raw: string | null): AppSettings {
   const reduceMotion =
     typeof record.reduceMotion === 'boolean' ? record.reduceMotion : DEFAULT_SETTINGS.reduceMotion;
 
-  return { backendUrl, fontSize, reduceMotion };
+  const theme = isThemeId(record.theme) ? record.theme : DEFAULT_SETTINGS.theme;
+
+  return { backendUrl, fontSize, reduceMotion, theme };
 }

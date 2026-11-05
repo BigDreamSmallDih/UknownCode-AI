@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../lib/AuthContext';
 import { useSettings } from '../lib/SettingsContext';
 import { useNetwork } from '../lib/useNetwork';
 
@@ -33,8 +34,35 @@ async function checkBackend(baseUrl: string): Promise<BackendState> {
   }
 }
 
+type ProfileState =
+  | { kind: 'idle' }
+  | { kind: 'ok'; name: string }
+  | { kind: 'error'; message: string };
+
+/** Calls the backend /me endpoint with the user's access token (verifies auth end to end). */
+async function fetchProfile(baseUrl: string, accessToken: string): Promise<ProfileState> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), HEALTH_TIMEOUT_MS);
+  try {
+    const response = await fetch(`${baseUrl}/me`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      signal: controller.signal,
+    });
+    if (response.status === 401) return { kind: 'error', message: 'Sesi ditolak server. Coba keluar lalu masuk lagi.' };
+    if (!response.ok) return { kind: 'error', message: `Server membalas HTTP ${response.status}` };
+    const body = (await response.json()) as { profile?: { display_name?: string | null } };
+    return { kind: 'ok', name: body.profile?.display_name ?? 'Tanpa nama' };
+  } catch {
+    return { kind: 'error', message: 'Tidak bisa mengambil profil dari server' };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export function Home() {
   const { settings, loaded } = useSettings();
+  const { session } = useAuth();
+  const [profile, setProfile] = useState<ProfileState>({ kind: 'idle' });
   const { online } = useNetwork();
   const [state, setState] = useState<BackendState>({ kind: 'unconfigured' });
 
@@ -50,6 +78,21 @@ export function Home() {
   useEffect(() => {
     if (loaded) void run();
   }, [loaded, run]);
+
+  const accessToken = session?.access_token;
+  useEffect(() => {
+    if (state.kind !== 'ok' || !accessToken) {
+      setProfile({ kind: 'idle' });
+      return;
+    }
+    let active = true;
+    void fetchProfile(settings.backendUrl, accessToken).then((result) => {
+      if (active) setProfile(result);
+    });
+    return () => {
+      active = false;
+    };
+  }, [state.kind, accessToken, settings.backendUrl]);
 
   return (
     <div className="screen">
@@ -71,7 +114,16 @@ export function Home() {
             <span>Backend</span>
             <BackendBadge state={state} />
           </li>
+          {accessToken && (
+            <li>
+              <span>Akun</span>
+              {profile.kind === 'ok' && <span className="ok">{profile.name}</span>}
+              {profile.kind === 'error' && <span className="bad">Gagal</span>}
+              {profile.kind === 'idle' && <span className="muted">—</span>}
+            </li>
+          )}
         </ul>
+        {profile.kind === 'error' && <p className="error-text">{profile.message}</p>}
         {state.kind === 'unconfigured' && (
           <p className="muted">
             URL backend belum diatur. Atur di <Link to="/settings">Settings</Link>.
@@ -92,7 +144,7 @@ export function Home() {
 
       <section className="card">
         <h2>Progres pengembangan</h2>
-        <p className="muted">Phase 1 dari 10: fondasi dan UI Android.</p>
+        <p className="muted">Phase 2 dari 10: autentikasi dan database.</p>
       </section>
     </div>
   );

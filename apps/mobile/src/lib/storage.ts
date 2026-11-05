@@ -32,3 +32,15 @@ export async function setItem(key: string, value: string): Promise<boolean> {
     return false;
   }
 }
+
+export async function removeItem(key: string): Promise<void> {
+  try {
+    if (isNative()) {
+      await Preferences.remove({ key });
+    } else {
+      window.localStorage.removeItem(key);
+    }
+  } catch {
+    // Ignore: removing a missing or unreadable key is not an error for callers.
+  }
+}

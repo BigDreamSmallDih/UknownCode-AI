@@ -31,8 +31,23 @@ describe('parseSettings', () => {
 
   it('keeps valid fields and replaces invalid ones', () => {
     const parsed = parseSettings(
-      JSON.stringify({ backendUrl: 'http://evil.com', fontSize: 'lg', reduceMotion: 'yes' }),
+      JSON.stringify({
+        backendUrl: 'http://evil.com',
+        fontSize: 'lg',
+        reduceMotion: 'yes',
+        theme: 'neon',
+      }),
     );
-    expect(parsed).toEqual({ backendUrl: '', fontSize: 'lg', reduceMotion: false });
+    expect(parsed).toEqual({
+      backendUrl: '',
+      fontSize: 'lg',
+      reduceMotion: false,
+      theme: 'blue',
+    });
+  });
+
+  it('keeps a valid theme', () => {
+    expect(parseSettings(JSON.stringify({ theme: 'gray' })).theme).toBe('gray');
+    expect(parseSettings(JSON.stringify({ theme: 'light' })).theme).toBe('light');
   });
 });

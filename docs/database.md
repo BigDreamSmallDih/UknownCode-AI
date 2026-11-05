@@ -1,7 +1,7 @@
 # Database
 
-Migrasi ada di `supabase/migrations`. Migrasi ini baru **ditulis** di Phase 1 dan belum diterapkan
-ke project Supabase mana pun. Penerapan dilakukan di Phase 2 bersama autentikasi.
+Migrasi ada di `supabase/migrations`. Migrasi ini ditulis di Phase 1 dan diterapkan ke project Supabase di Phase 2
+(lihat [auth.md](auth.md)). Gunakan project Supabase khusus UknownCode.
 
 ## Tabel
 
