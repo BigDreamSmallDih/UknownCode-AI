@@ -1,3 +1,4 @@
+import { DEFAULT_LANGUAGE_SETTING, isLanguageSetting, type LanguageSetting } from '../i18n';
 import { DEFAULT_THEME, isThemeId, type ThemeId } from './theme';
 
 export type FontSize = 'sm' | 'md' | 'lg';
@@ -8,6 +9,9 @@ export interface AppSettings {
   fontSize: FontSize;
   reduceMotion: boolean;
   theme: ThemeId;
+  language: LanguageSetting;
+  /** Last chosen OpenRouter model id for AI chat ('' = not chosen yet). */
+  aiModel: string;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -15,6 +19,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   fontSize: 'md',
   reduceMotion: false,
   theme: DEFAULT_THEME,
+  language: DEFAULT_LANGUAGE_SETTING,
+  aiModel: '',
 };
 
 export const SETTINGS_KEY = 'uknowncode.settings.v1';
@@ -63,5 +69,13 @@ export function parseSettings(raw: string | null): AppSettings {
 
   const theme = isThemeId(record.theme) ? record.theme : DEFAULT_SETTINGS.theme;
 
-  return { backendUrl, fontSize, reduceMotion, theme };
+  const language = isLanguageSetting(record.language)
+    ? record.language
+    : DEFAULT_SETTINGS.language;
+  const aiModel =
+    typeof record.aiModel === 'string' && record.aiModel.length <= 200
+      ? record.aiModel
+      : DEFAULT_SETTINGS.aiModel;
+
+  return { backendUrl, fontSize, reduceMotion, theme, language, aiModel };
 }

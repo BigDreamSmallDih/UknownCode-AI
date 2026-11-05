@@ -1,12 +1,13 @@
 import type { Session } from '@supabase/supabase-js';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
+import type { MessageKey } from '../i18n';
 import { mapAuthError } from './authErrors';
 import { getSupabase, isSupabaseConfigured } from './supabase';
 
 export type AuthResult =
   | { ok: true; needsConfirmation: boolean }
-  | { ok: false; message: string };
+  | { ok: false; messageKey: MessageKey };
 
 interface AuthContextValue {
   /** False when this build has no Supabase configuration. Login is then not enforced. */
@@ -54,26 +55,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = useCallback(async (email: string, password: string): Promise<AuthResult> => {
     const supabase = getSupabase();
-    if (!supabase) return { ok: false, message: 'Supabase belum dikonfigurasi di build ini.' };
+    if (!supabase) return { ok: false, messageKey: 'err.notConfigured' };
     try {
       const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-      if (error) return { ok: false, message: mapAuthError(error) };
+      if (error) return { ok: false, messageKey: mapAuthError(error) };
       return { ok: true, needsConfirmation: false };
     } catch (error) {
-      return { ok: false, message: mapAuthError(error as Error) };
+      return { ok: false, messageKey: mapAuthError(error as Error) };
     }
   }, []);
 
   const signUp = useCallback(async (email: string, password: string): Promise<AuthResult> => {
     const supabase = getSupabase();
-    if (!supabase) return { ok: false, message: 'Supabase belum dikonfigurasi di build ini.' };
+    if (!supabase) return { ok: false, messageKey: 'err.notConfigured' };
     try {
       const { data, error } = await supabase.auth.signUp({ email: email.trim(), password });
-      if (error) return { ok: false, message: mapAuthError(error) };
+      if (error) return { ok: false, messageKey: mapAuthError(error) };
       // No session means the project requires email confirmation first.
       return { ok: true, needsConfirmation: data.session === null };
     } catch (error) {
-      return { ok: false, message: mapAuthError(error as Error) };
+      return { ok: false, messageKey: mapAuthError(error as Error) };
     }
   }, []);
 

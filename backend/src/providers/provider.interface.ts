@@ -1,12 +1,12 @@
 /**
- * Common contract for AI providers (Gemini, Claude, OpenAI).
+ * Common contract for AI providers.
  *
- * Phase 1 only defines the types. Concrete implementations arrive in Phase 4.
- * Providers do not support identical features, so capabilities are declared explicitly
- * and callers must check them instead of assuming parity.
+ * Providers do not support identical features, so capabilities are declared explicitly and
+ * callers must check them instead of assuming parity. Implemented so far: OpenRouter.
+ * Gemini, Claude, and OpenAI direct providers are still to come.
  */
 
-export type ProviderId = 'gemini' | 'claude' | 'openai';
+export type ProviderId = 'gemini' | 'claude' | 'openai' | 'openrouter';
 
 export type ChatRole = 'system' | 'user' | 'assistant';
 
@@ -27,6 +27,13 @@ export interface TokenUsage {
   outputTokens?: number;
 }
 
+export interface ModelInfo {
+  id: string;
+  name: string;
+  free: boolean;
+  contextLength?: number;
+}
+
 export interface ChatRequest {
   model: string;
   messages: ChatMessage[];
@@ -42,15 +49,18 @@ export interface ChatResponse {
   model: string;
 }
 
+/** Stable, provider-independent error categories. Raw upstream text is never exposed. */
+export type ProviderErrorCode = 'RATE_LIMITED' | 'AUTH' | 'MODEL' | 'TIMEOUT' | 'UPSTREAM';
+
 export type StreamEvent =
   | { type: 'delta'; text: string }
   | { type: 'done'; usage: TokenUsage }
-  | { type: 'error'; message: string; retryable: boolean };
+  | { type: 'error'; code: ProviderErrorCode; message: string; retryable: boolean };
 
 export interface AIProvider {
   readonly id: ProviderId;
   readonly capabilities: ProviderCapabilities;
-  listModels(): Promise<string[]>;
+  listModels(): Promise<ModelInfo[]>;
   chat(request: ChatRequest): Promise<ChatResponse>;
   chatStream(request: ChatRequest): AsyncIterable<StreamEvent>;
 }

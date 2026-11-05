@@ -1,16 +1,20 @@
+import type { MessageKey } from '../i18n';
+import { useI18n } from '../i18n/I18nContext';
+
 interface PhaseNoticeProps {
-  title: string;
+  titleKey: MessageKey;
+  descriptionKey: MessageKey;
   phase: number;
-  description: string;
 }
 
 /** Honest placeholder for features that are not built yet. It has no interactive controls. */
-export function PhaseNotice({ title, phase, description }: PhaseNoticeProps) {
+export function PhaseNotice({ titleKey, descriptionKey, phase }: PhaseNoticeProps) {
+  const { t } = useI18n();
   return (
     <section className="card notice">
-      <h2>{title}</h2>
-      <p className="muted">{description}</p>
-      <p className="badge">Belum tersedia · dibangun di Phase {phase}</p>
+      <h2>{t(titleKey)}</h2>
+      <p className="muted">{t(descriptionKey)}</p>
+      <p className="badge">{t('notice.badge', { phase })}</p>
     </section>
   );
 }

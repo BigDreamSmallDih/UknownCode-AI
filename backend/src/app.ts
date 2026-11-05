@@ -3,12 +3,20 @@ import helmet from '@fastify/helmet';
 import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
 import { createSupabaseAuthService, type AuthService } from './auth/auth.service.js';
 import type { Env } from './config/env.js';
+import { FixedWindowLimiter } from './lib/rate-limit.js';
+import { OpenRouterProvider } from './providers/openrouter.js';
+import { ProviderRouter } from './providers/router.js';
+import { aiRoutes } from './routes/ai.js';
 import { healthRoutes } from './routes/health.js';
 import { meRoutes } from './routes/me.js';
 
 export interface AppDeps {
   /** Override the auth service (tests). `null` means "not configured". */
   auth?: AuthService | null;
+  /** Override the AI providers (tests). */
+  providers?: ProviderRouter;
+  /** Override the AI rate limiter (tests). */
+  limiter?: FixedWindowLimiter;
 }
 
 export async function buildApp(env: Env, deps: AppDeps = {}): Promise<FastifyInstance> {
@@ -42,6 +50,21 @@ export async function buildApp(env: Env, deps: AppDeps = {}): Promise<FastifyIns
 
   await app.register(healthRoutes);
   await app.register(meRoutes(auth));
+
+  const providers =
+    deps.providers ??
+    new ProviderRouter(
+      env.OPENROUTER_API_KEY
+        ? [
+            new OpenRouterProvider({
+              apiKey: env.OPENROUTER_API_KEY,
+              ...(env.OPENROUTER_REFERER ? { referer: env.OPENROUTER_REFERER } : {}),
+            }),
+          ]
+        : [],
+    );
+  const limiter = deps.limiter ?? new FixedWindowLimiter(env.AI_RATE_LIMIT, 10 * 60_000);
+  await app.register(aiRoutes({ auth, providers, limiter }));
 
   return app;
 }

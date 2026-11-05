@@ -36,6 +36,8 @@ describe('parseSettings', () => {
         fontSize: 'lg',
         reduceMotion: 'yes',
         theme: 'neon',
+        language: 'klingon',
+        aiModel: 42,
       }),
     );
     expect(parsed).toEqual({
@@ -43,7 +45,15 @@ describe('parseSettings', () => {
       fontSize: 'lg',
       reduceMotion: false,
       theme: 'blue',
+      language: 'auto',
+      aiModel: '',
     });
+  });
+
+  it('keeps a valid language and model', () => {
+    const parsed = parseSettings(JSON.stringify({ language: 'ja', aiModel: 'vendor/model:free' }));
+    expect(parsed.language).toBe('ja');
+    expect(parsed.aiModel).toBe('vendor/model:free');
   });
 
   it('keeps a valid theme', () => {

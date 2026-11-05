@@ -1,19 +1,14 @@
+import { ChatPanel } from '../components/ChatPanel';
 import { PhaseNotice } from '../components/PhaseNotice';
+import { useI18n } from '../i18n/I18nContext';
 
 export function Agent() {
+  const { t } = useI18n();
   return (
     <div className="screen">
-      <h1>AI Agent</h1>
-      <PhaseNotice
-        title="Chat multi-provider"
-        phase={4}
-        description="Gemini, Claude, dan OpenAI lewat backend, dengan streaming dan riwayat percakapan."
-      />
-      <PhaseNotice
-        title="Agent perencana dan pengkode"
-        phase={6}
-        description="Planner, Executor, Reviewer, dan Error Fixer dengan persetujuan sebelum perubahan."
-      />
+      <h1>{t('agent.title')}</h1>
+      <ChatPanel />
+      <PhaseNotice titleKey="agent.engine.title" descriptionKey="agent.engine.desc" phase={6} />
     </div>
   );
 }

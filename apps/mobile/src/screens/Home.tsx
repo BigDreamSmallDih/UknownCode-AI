@@ -1,70 +1,81 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Logo } from '../components/Logo';
+import type { MessageKey, TranslateParams } from '../i18n';
+import { useI18n } from '../i18n/I18nContext';
 import { useAuth } from '../lib/AuthContext';
 import { useSettings } from '../lib/SettingsContext';
 import { useNetwork } from '../lib/useNetwork';
+
+interface Failure {
+  key: MessageKey;
+  params?: TranslateParams;
+}
 
 type BackendState =
   | { kind: 'unconfigured' }
   | { kind: 'checking' }
   | { kind: 'ok'; latencyMs: number }
-  | { kind: 'error'; message: string };
+  | { kind: 'error'; failure: Failure };
 
-const HEALTH_TIMEOUT_MS = 10_000;
+type ProfileState =
+  | { kind: 'idle' }
+  | { kind: 'ok'; name: string | null }
+  | { kind: 'error'; failure: Failure };
+
+const REQUEST_TIMEOUT_MS = 10_000;
 
 async function checkBackend(baseUrl: string): Promise<BackendState> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), HEALTH_TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   const started = performance.now();
   try {
     const response = await fetch(`${baseUrl}/health`, { signal: controller.signal });
-    if (!response.ok) return { kind: 'error', message: `Server membalas HTTP ${response.status}` };
+    if (!response.ok) {
+      return { kind: 'error', failure: { key: 'home.errHttp', params: { status: response.status } } };
+    }
     const body: unknown = await response.json();
-    const status = (body as { status?: unknown } | null)?.status;
-    if (status !== 'ok') return { kind: 'error', message: 'Respons /health tidak valid' };
+    if ((body as { status?: unknown } | null)?.status !== 'ok') {
+      return { kind: 'error', failure: { key: 'home.errInvalid' } };
+    }
     return { kind: 'ok', latencyMs: Math.round(performance.now() - started) };
   } catch (error) {
     const aborted = error instanceof DOMException && error.name === 'AbortError';
-    return {
-      kind: 'error',
-      message: aborted ? 'Waktu habis (server mungkin sedang bangun, coba lagi)' : 'Tidak bisa terhubung ke server',
-    };
+    return { kind: 'error', failure: { key: aborted ? 'home.errTimeout' : 'home.errConnect' } };
   } finally {
     clearTimeout(timer);
   }
 }
 
-type ProfileState =
-  | { kind: 'idle' }
-  | { kind: 'ok'; name: string }
-  | { kind: 'error'; message: string };
-
-/** Calls the backend /me endpoint with the user's access token (verifies auth end to end). */
+/** Calls /me with the user's access token, which verifies auth end to end. */
 async function fetchProfile(baseUrl: string, accessToken: string): Promise<ProfileState> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), HEALTH_TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   try {
     const response = await fetch(`${baseUrl}/me`, {
       headers: { Authorization: `Bearer ${accessToken}` },
       signal: controller.signal,
     });
-    if (response.status === 401) return { kind: 'error', message: 'Sesi ditolak server. Coba keluar lalu masuk lagi.' };
-    if (!response.ok) return { kind: 'error', message: `Server membalas HTTP ${response.status}` };
-    const body = (await response.json()) as { profile?: { display_name?: string | null } };
-    return { kind: 'ok', name: body.profile?.display_name ?? 'Tanpa nama' };
+    if (response.status === 401) return { kind: 'error', failure: { key: 'home.profileRejected' } };
+    if (!response.ok) {
+      return { kind: 'error', failure: { key: 'home.errHttp', params: { status: response.status } } };
+    }
+    const body = (await response.json()) as { profile?: { display_name?: string | null } | null };
+    return { kind: 'ok', name: body.profile?.display_name ?? null };
   } catch {
-    return { kind: 'error', message: 'Tidak bisa mengambil profil dari server' };
+    return { kind: 'error', failure: { key: 'home.profileFailed' } };
   } finally {
     clearTimeout(timer);
   }
 }
 
 export function Home() {
+  const { t } = useI18n();
   const { settings, loaded } = useSettings();
   const { session } = useAuth();
-  const [profile, setProfile] = useState<ProfileState>({ kind: 'idle' });
   const { online } = useNetwork();
   const [state, setState] = useState<BackendState>({ kind: 'unconfigured' });
+  const [profile, setProfile] = useState<ProfileState>({ kind: 'idle' });
 
   const run = useCallback(async () => {
     if (!settings.backendUrl) {
@@ -94,42 +105,53 @@ export function Home() {
     };
   }, [state.kind, accessToken, settings.backendUrl]);
 
+  const failure =
+    state.kind === 'error' ? state.failure : profile.kind === 'error' ? profile.failure : null;
+
   return (
     <div className="screen">
       <header className="hero">
-        <h1>
-          Uknown<span className="accent">Code</span> AI
-        </h1>
-        <p className="muted">Lingkungan pengembangan Android berbasis AI.</p>
+        <Logo size={44} />
+        <div>
+          <h1>
+            Uknown<span className="accent">Code</span> AI
+          </h1>
+          <p className="muted">{t('home.tagline')}</p>
+        </div>
       </header>
 
       <section className="card">
-        <h2>Status koneksi</h2>
+        <h2>{t('home.statusTitle')}</h2>
         <ul className="status-list">
           <li>
-            <span>Internet</span>
-            <span className={online ? 'ok' : 'bad'}>{online ? 'Online' : 'Offline'}</span>
+            <span>{t('home.internet')}</span>
+            <span className={online ? 'ok' : 'bad'}>
+              <i className={`dot ${online ? 'ok' : 'bad'}`} />
+              {online ? t('home.online') : t('home.offline')}
+            </span>
           </li>
           <li>
-            <span>Backend</span>
+            <span>{t('home.backend')}</span>
             <BackendBadge state={state} />
           </li>
           {accessToken && (
             <li>
-              <span>Akun</span>
-              {profile.kind === 'ok' && <span className="ok">{profile.name}</span>}
-              {profile.kind === 'error' && <span className="bad">Gagal</span>}
+              <span>{t('home.account')}</span>
+              {profile.kind === 'ok' && (
+                <span className="ok">{profile.name ?? t('home.noName')}</span>
+              )}
+              {profile.kind === 'error' && <span className="bad">{t('home.failed')}</span>}
               {profile.kind === 'idle' && <span className="muted">—</span>}
             </li>
           )}
         </ul>
-        {profile.kind === 'error' && <p className="error-text">{profile.message}</p>}
+
         {state.kind === 'unconfigured' && (
           <p className="muted">
-            URL backend belum diatur. Atur di <Link to="/settings">Settings</Link>.
+            {t('home.backendNotSet')} <Link to="/settings">{t('home.openSettings')}</Link>
           </p>
         )}
-        {state.kind === 'error' && <p className="error-text">{state.message}</p>}
+        {failure && <p className="error-text">{t(failure.key, failure.params)}</p>}
         {settings.backendUrl && (
           <button
             type="button"
@@ -137,28 +159,39 @@ export function Home() {
             onClick={() => void run()}
             disabled={state.kind === 'checking' || !online}
           >
-            {state.kind === 'checking' ? 'Memeriksa…' : 'Periksa ulang'}
+            {state.kind === 'checking' ? t('home.checking') : t('home.recheck')}
           </button>
         )}
       </section>
 
       <section className="card">
-        <h2>Progres pengembangan</h2>
-        <p className="muted">Phase 2 dari 10: autentikasi dan database.</p>
+        <h2>{t('home.progressTitle')}</h2>
+        <p className="muted">{t('home.progressText')}</p>
       </section>
     </div>
   );
 }
 
 function BackendBadge({ state }: { state: BackendState }) {
+  const { t } = useI18n();
   switch (state.kind) {
     case 'unconfigured':
-      return <span className="muted">Belum diatur</span>;
+      return <span className="muted">{t('home.notSet')}</span>;
     case 'checking':
-      return <span className="muted">Memeriksa…</span>;
+      return <span className="muted">{t('home.checking')}</span>;
     case 'ok':
-      return <span className="ok">Terhubung · {state.latencyMs} ms</span>;
+      return (
+        <span className="ok">
+          <i className="dot ok" />
+          {t('home.connected', { ms: state.latencyMs })}
+        </span>
+      );
     case 'error':
-      return <span className="bad">Gagal</span>;
+      return (
+        <span className="bad">
+          <i className="dot bad" />
+          {t('home.failed')}
+        </span>
+      );
   }
 }
