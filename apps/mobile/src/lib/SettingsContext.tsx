@@ -37,7 +37,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     const root = document.documentElement;
     root.dataset.fontSize = settings.fontSize;
     root.dataset.reduceMotion = String(settings.reduceMotion);
-  }, [settings.fontSize, settings.reduceMotion]);
+    root.dataset.theme = settings.theme;
+  }, [settings.fontSize, settings.reduceMotion, settings.theme]);
 
   const update = useCallback(
     async (patch: Partial<AppSettings>) => {

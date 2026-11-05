@@ -40,6 +40,10 @@ jobs:
 
       - name: Build web assets
         run: npm run build -w apps/mobile
+        env:
+          # Public values (project URL and publishable key). Set under Settings > Variables.
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
       - name: Create Android project if missing
         working-directory: apps/mobile

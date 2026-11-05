@@ -7,7 +7,7 @@ describe('backend', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
-    app = await buildApp(loadEnv({ NODE_ENV: 'test' }));
+    app = await buildApp(loadEnv({ NODE_ENV: 'test' }), { auth: null });
   });
 
   afterAll(async () => {
@@ -36,6 +36,11 @@ describe('loadEnv', () => {
     const env = loadEnv({});
     expect(env.PORT).toBe(8080);
     expect(env.CORS_ORIGINS).toContain('https://localhost');
+  });
+
+  it('treats blank Supabase values as unset and rejects http URLs', () => {
+    expect(loadEnv({ SUPABASE_URL: '' }).SUPABASE_URL).toBeUndefined();
+    expect(() => loadEnv({ SUPABASE_URL: 'http://example.com' })).toThrow(/SUPABASE_URL/);
   });
 
   it('rejects an invalid port with a readable message', () => {
