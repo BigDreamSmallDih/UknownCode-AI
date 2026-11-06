@@ -38,6 +38,8 @@ describe('parseSettings', () => {
         theme: 'neon',
         language: 'klingon',
         aiModel: 42,
+        layout: 'tablet',
+        autoUpdateCheck: 'sure',
       }),
     );
     expect(parsed).toEqual({
@@ -47,6 +49,8 @@ describe('parseSettings', () => {
       theme: 'blue',
       language: 'auto',
       aiModel: '',
+      layout: 'auto',
+      autoUpdateCheck: true,
     });
   });
 
