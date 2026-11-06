@@ -1,10 +1,11 @@
 import { DEFAULT_LANGUAGE_SETTING, isLanguageSetting, type LanguageSetting } from '../i18n';
+import { isLayoutSetting, type LayoutSetting } from './layout';
 import { DEFAULT_THEME, isThemeId, type ThemeId } from './theme';
 
 export type FontSize = 'sm' | 'md' | 'lg';
 
 export interface AppSettings {
-  /** Base URL of the UknownCode backend, e.g. https://uknowncode-backend.onrender.com */
+  /** Base URL of the UknownCode backend, e.g. https://uknowncode-bd.<account>.workers.dev */
   backendUrl: string;
   fontSize: FontSize;
   reduceMotion: boolean;
@@ -12,6 +13,10 @@ export interface AppSettings {
   language: LanguageSetting;
   /** Last chosen OpenRouter model id for AI chat ('' = not chosen yet). */
   aiModel: string;
+  /** Phone or desktop layout; 'auto' follows the window width. */
+  layout: LayoutSetting;
+  /** Check GitHub Releases for a newer app version on launch. */
+  autoUpdateCheck: boolean;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -21,6 +26,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   theme: DEFAULT_THEME,
   language: DEFAULT_LANGUAGE_SETTING,
   aiModel: '',
+  layout: 'auto',
+  autoUpdateCheck: true,
 };
 
 export const SETTINGS_KEY = 'uknowncode.settings.v1';
@@ -77,5 +84,20 @@ export function parseSettings(raw: string | null): AppSettings {
       ? record.aiModel
       : DEFAULT_SETTINGS.aiModel;
 
-  return { backendUrl, fontSize, reduceMotion, theme, language, aiModel };
+  const layout = isLayoutSetting(record.layout) ? record.layout : DEFAULT_SETTINGS.layout;
+  const autoUpdateCheck =
+    typeof record.autoUpdateCheck === 'boolean'
+      ? record.autoUpdateCheck
+      : DEFAULT_SETTINGS.autoUpdateCheck;
+
+  return {
+    backendUrl,
+    fontSize,
+    reduceMotion,
+    theme,
+    language,
+    aiModel,
+    layout,
+    autoUpdateCheck,
+  };
 }

@@ -1,0 +1,108 @@
+/*
+ * Design tokens. Concept: a technical drawing. Flat panels, ink-blue hairlines, a faint
+ * drafting grid, corner marks on the one surface that matters per screen.
+ * Feature code must use these variables and the shared classes in components.css,
+ * never hard-coded colors.
+ */
+
+:root,
+:root[data-theme='blue'] {
+  /* Biru: cyanotype */
+  --bg: #081a33;
+  --bg-grid: rgba(122, 170, 255, 0.075);
+  --surface: #0c2347;
+  --surface-2: #10305e;
+  --surface-3: #163a72;
+  --line: #24508f;
+  --line-strong: #3b76cc;
+  --text: #f2f7ff;
+  --muted: #93b4e0;
+  --accent: #5aa9ff;
+  --accent-ink: #04152e;
+  --accent-soft: rgba(90, 169, 255, 0.16);
+  --ok: #4fe0b0;
+  --warn: #ffd166;
+  --bad: #ff8a8a;
+  --scrim: rgba(3, 10, 22, 0.64);
+  --code-bg: #071630;
+  color-scheme: dark;
+}
+
+:root[data-theme='gray'] {
+  /* Abu-abu: graphite */
+  --bg: #1f2226;
+  --bg-grid: rgba(255, 255, 255, 0.035);
+  --surface: #272b30;
+  --surface-2: #30353b;
+  --surface-3: #3a4048;
+  --line: #3d444c;
+  --line-strong: #56606b;
+  --text: #e6e9ed;
+  --muted: #9ba5b0;
+  --accent: #79aef0;
+  --accent-ink: #0d1622;
+  --accent-soft: rgba(121, 174, 240, 0.16);
+  --ok: #6fd3a3;
+  --warn: #e6c36a;
+  --bad: #f09090;
+  --scrim: rgba(8, 10, 12, 0.66);
+  --code-bg: #1a1d21;
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  /* Terang: drafting paper */
+  --bg: #f3f7ff;
+  --bg-grid: rgba(20, 89, 230, 0.06);
+  --surface: #ffffff;
+  --surface-2: #eaf1ff;
+  --surface-3: #dce8ff;
+  --line: #c7d7f3;
+  --line-strong: #8fb0e8;
+  --text: #0a1f44;
+  --muted: #56709d;
+  --accent: #1459e6;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(20, 89, 230, 0.1);
+  --ok: #0a8f63;
+  --warn: #a86700;
+  --bad: #c62828;
+  --scrim: rgba(10, 31, 68, 0.38);
+  --code-bg: #f8faff;
+  color-scheme: light;
+}
+
+:root {
+  --font-ui: 'Figtree Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Bricolage Grotesque Variable', 'Figtree Variable', system-ui, sans-serif;
+  --font-code: 'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  --font-scale: 1;
+  --radius-panel: 14px;
+  --radius-control: 10px;
+  --radius-sheet: 22px;
+  --touch: 44px;
+  --nav-height: 62px;
+  --rail-width: 80px;
+
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --z-sheet: 60;
+  --z-toast: 70;
+  --z-lock: 90;
+  --z-splash: 100;
+}
+
+:root[data-font-size='sm'] {
+  --font-scale: 0.92;
+}
+:root[data-font-size='lg'] {
+  --font-scale: 1.14;
+}
+
+/* Aliases for older screen CSS (legacy.css). Remove once no screen uses them. */
+:root {
+  --border: var(--line);
+  --accent-2: var(--accent);
+  --accent-contrast: var(--accent-ink);
+}

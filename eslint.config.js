@@ -16,10 +16,6 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ['backend/**/*.ts'],
-    languageOptions: { globals: globals.node },
-  },
-  {
     files: ['apps/mobile/**/*.{ts,tsx}'],
     languageOptions: { globals: globals.browser },
     plugins: { 'react-hooks': reactHooks },

@@ -7,10 +7,14 @@ import { useAuth } from './lib/AuthContext';
 import { useSettings } from './lib/SettingsContext';
 import { useBackButton, useStatusBar } from './lib/useNativeShell';
 import { useNetwork } from './lib/useNetwork';
+import { LockGate } from './features/security/LockGate';
+import { SecurityPage } from './features/security/SecurityPage';
+import { UpdateBanner } from './features/update/UpdateBanner';
+import { WorkspacePage } from './features/workspace/WorkspacePage';
+import { useLayoutMode } from './lib/layout';
 import { Agent } from './screens/Agent';
 import { AuthScreen } from './screens/Auth';
 import { Home } from './screens/Home';
-import { Projects } from './screens/Projects';
 import { Settings } from './screens/Settings';
 import { Terminal } from './screens/Terminal';
 
@@ -21,6 +25,7 @@ const SPLASH_FADE_MS = 450;
 export function App() {
   useStatusBar();
   useBackButton();
+  useLayoutMode();
   const { t } = useI18n();
   const { online } = useNetwork();
   const location = useLocation();
@@ -67,26 +72,33 @@ export function App() {
 
   return (
     <>
-      <div className="app-shell">
-        {!online && (
-          <div className="offline-banner" role="alert">
-            {t('app.offlineBanner')}
+      <LockGate>
+        <div className="app-shell">
+          {!online && (
+            <div className="offline-banner" role="alert">
+              {t('app.offlineBanner')}
+            </div>
+          )}
+          <UpdateBanner />
+          <div className="app-body">
+            <main className="app-main">
+              <div className="page" key={location.pathname}>
+                <Routes location={location}>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/workspace/*" element={<WorkspacePage />} />
+                  <Route path="/projects" element={<Navigate to="/workspace" replace />} />
+                  <Route path="/security" element={<SecurityPage />} />
+                  <Route path="/agent" element={<Agent />} />
+                  <Route path="/terminal" element={<Terminal />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </div>
+            </main>
+            <BottomNav />
           </div>
-        )}
-        <main className="app-main">
-          <div className="page" key={location.pathname}>
-            <Routes location={location}>
-              <Route path="/" element={<Home />} />
-              <Route path="/projects" element={<Projects />} />
-              <Route path="/agent" element={<Agent />} />
-              <Route path="/terminal" element={<Terminal />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </div>
-        </main>
-        <BottomNav />
-      </div>
+        </div>
+      </LockGate>
       {splash}
     </>
   );

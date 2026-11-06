@@ -5,7 +5,10 @@ import { App } from './App';
 import { I18nProvider } from './i18n/I18nContext';
 import { AuthProvider } from './lib/AuthContext';
 import { SettingsProvider } from './lib/SettingsContext';
-import './styles.css';
+import './styles/index.css';
+import '@fontsource-variable/bricolage-grotesque';
+import '@fontsource-variable/figtree';
+import '@fontsource-variable/jetbrains-mono';
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Root element #root not found');
