@@ -11,12 +11,13 @@ interface NavItem {
 
 const ITEMS: readonly NavItem[] = [
   { to: '/', labelKey: 'nav.home', icon: 'home' },
-  { to: '/projects', labelKey: 'nav.projects', icon: 'folder' },
+  { to: '/workspace', labelKey: 'nav.workspace', icon: 'folder' },
   { to: '/agent', labelKey: 'nav.agent', icon: 'spark' },
   { to: '/terminal', labelKey: 'nav.terminal', icon: 'terminal' },
   { to: '/settings', labelKey: 'nav.settings', icon: 'gear' },
 ];
 
+/** Bottom bar on phones, vertical rail on desktop (same markup, CSS decides). */
 export function BottomNav() {
   const { t } = useI18n();
   return (

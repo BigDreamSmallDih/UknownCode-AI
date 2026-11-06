@@ -1,13 +1,15 @@
 import { de } from './messages/de';
-import { en, type MessageKey, type Messages } from './messages/en';
+import { en, type MessageKey as BaseKey } from './messages/en';
 import { es } from './messages/es';
 import { fr } from './messages/fr';
 import { id } from './messages/id';
 import { ja } from './messages/ja';
 import { ko } from './messages/ko';
 import { zh } from './messages/zh';
+import { PARTS, type PartKey } from './parts';
 
-export type { MessageKey } from './messages/en';
+export type MessageKey = BaseKey | PartKey;
+export type Messages = Record<MessageKey, string>;
 
 export type LanguageId = 'id' | 'en' | 'zh' | 'es' | 'fr' | 'de' | 'ja' | 'ko';
 export type LanguageSetting = LanguageId | 'auto';
@@ -26,7 +28,24 @@ export const LANGUAGES: ReadonlyArray<{ id: LanguageId; nativeName: string }> = 
 
 export const DEFAULT_LANGUAGE_SETTING: LanguageSetting = 'auto';
 
-const CATALOGS: Record<LanguageId, Messages> = { id, en, zh, es, fr, de, ja, ko };
+const BASE: Record<LanguageId, Record<BaseKey, string>> = { id, en, zh, es, fr, de, ja, ko };
+
+function build(lang: LanguageId): Messages {
+  const merged: Record<string, string> = { ...BASE[lang] };
+  for (const part of PARTS) Object.assign(merged, part[lang]);
+  return merged as Messages;
+}
+
+const CATALOGS: Record<LanguageId, Messages> = {
+  id: build('id'),
+  en: build('en'),
+  zh: build('zh'),
+  es: build('es'),
+  fr: build('fr'),
+  de: build('de'),
+  ja: build('ja'),
+  ko: build('ko'),
+};
 
 export function isLanguageSetting(value: unknown): value is LanguageSetting {
   return value === 'auto' || LANGUAGES.some((language) => language.id === value);
@@ -53,7 +72,7 @@ export type TranslateParams = Record<string, string | number>;
 
 /** Looks up a message and fills {placeholders}. Falls back to English, then to the key. */
 export function translate(lang: LanguageId, key: MessageKey, params?: TranslateParams): string {
-  const template = CATALOGS[lang][key] ?? en[key] ?? key;
+  const template = CATALOGS[lang][key] ?? CATALOGS.en[key] ?? key;
   if (!params) return template;
   return template.replace(/\{(\w+)\}/g, (whole, name: string) => {
     const value = params[name];

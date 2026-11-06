@@ -1,0 +1,169 @@
+/* App frame: bottom nav on phones, left rail on desktop. */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  padding-top: env(safe-area-inset-top);
+  background: var(--bg);
+}
+.app-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+.app-main {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  /* Drafting grid, the one decorative idea of the app. */
+  background-image:
+    linear-gradient(var(--bg-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: -1px -1px;
+}
+.page {
+  min-height: 100%;
+  animation: page-in 0.3s var(--ease-out) both;
+}
+/* Screens that manage their own scrolling (editor, chat) fill the main area. */
+.page.fill {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 20px 16px 28px;
+}
+[data-layout='desktop'] .screen {
+  max-width: 880px;
+  padding: 32px 28px 40px;
+}
+.screen-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.screen-head h1 {
+  flex: 1;
+  min-width: 0;
+}
+
+.offline-banner {
+  padding: 8px 16px;
+  color: #1a1203;
+  background: var(--warn);
+  font-size: 0.85rem;
+  text-align: center;
+  animation: fade-in 0.3s var(--ease) both;
+}
+
+/* ---------- Navigation ---------- */
+.bottom-nav {
+  display: flex;
+  min-height: var(--nav-height);
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+}
+.nav-item {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s var(--ease);
+}
+.nav-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 28px;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 0 0 3px 3px;
+  transform: translateX(-50%) scaleX(0);
+  transition: transform 0.25s var(--ease);
+}
+.nav-item.active {
+  color: var(--accent);
+}
+.nav-item.active::before {
+  transform: translateX(-50%) scaleX(1);
+}
+.nav-icon {
+  display: grid;
+  place-items: center;
+  transition: transform 0.25s var(--ease);
+}
+.nav-item.active .nav-icon {
+  transform: translateY(-1px) scale(1.1);
+}
+.nav-item:active .nav-icon {
+  transform: scale(0.9);
+}
+
+[data-layout='desktop'] .app-body {
+  flex-direction: row-reverse;
+}
+[data-layout='desktop'] .bottom-nav {
+  flex: none;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 4px;
+  width: var(--rail-width);
+  min-height: 0;
+  padding: 14px 8px;
+  border-top: 0;
+  border-right: 1px solid var(--line);
+}
+[data-layout='desktop'] .nav-item {
+  flex: none;
+  min-height: 62px;
+  border-radius: var(--radius-control);
+}
+[data-layout='desktop'] .nav-item:hover {
+  background: var(--accent-soft);
+}
+[data-layout='desktop'] .nav-item::before {
+  top: 50%;
+  left: 0;
+  width: 3px;
+  height: 28px;
+  border-radius: 0 3px 3px 0;
+  transform: translateY(-50%) scaleY(0);
+}
+[data-layout='desktop'] .nav-item.active::before {
+  transform: translateY(-50%) scaleY(1);
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+:root[data-reduce-motion='true'] *,
+:root[data-reduce-motion='true'] *::before,
+:root[data-reduce-motion='true'] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}

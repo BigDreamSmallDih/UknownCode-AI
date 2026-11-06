@@ -1,22 +1,20 @@
 {
   "name": "uknowncode-ai",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.4.0",
   "description": "AI-powered Android coding environment with multi-provider agents and GitHub integration",
   "license": "MIT",
   "engines": {
     "node": ">=20"
   },
   "workspaces": [
-    "apps/mobile",
-    "backend"
+    "apps/mobile"
   ],
   "scripts": {
-    "dev:backend": "npm run dev -w backend",
     "dev:mobile": "npm run dev -w apps/mobile",
-    "build": "npm run build -w backend && npm run build -w apps/mobile",
-    "typecheck": "npm run typecheck -w backend && npm run typecheck -w apps/mobile",
-    "test": "npm run test -w backend && npm run test -w apps/mobile",
+    "build": "npm run build -w apps/mobile",
+    "typecheck": "npm run typecheck -w apps/mobile",
+    "test": "npm run test -w apps/mobile",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
