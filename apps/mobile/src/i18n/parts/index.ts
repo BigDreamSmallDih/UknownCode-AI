@@ -7,4 +7,5 @@ import { workspace } from './workspace';
 /** Every feature part. Add a new part here and the catalogs, key types and tests pick it up. */
 export const PARTS = [shell, workspace, security, update, ui] as const;
 
-export type PartKey = keyof (typeof PARTS)[number]['en'];
+type KeysOf<T> = T extends unknown ? keyof T : never;
+export type PartKey = KeysOf<(typeof PARTS)[number]['en']>;
